@@ -1,9 +1,9 @@
 import math
 import pygame
 
-SCREEN = WIDTH, HEIGHT = 300, 300
-CELLSIZE = 40
-PADDING = 20
+SCREEN = WIDTH, HEIGHT = 400, 450
+CELLSIZE = int(WIDTH/6)
+PADDING = int(WIDTH/12)
 ROWS = COLS = (WIDTH - 4 * PADDING) // CELLSIZE
 pygame.init()
 win = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
@@ -15,6 +15,15 @@ GREEN = (0, 255, 0)
 BLACK = (12, 12, 12)
 
 font = pygame.font.SysFont('cursive', 25)
+
+pygame.mixer.init()
+
+pygame.mixer.music.load('sounds/Late-to-the-party.mp3')
+pygame.mixer.music.play(-1)
+
+wall_sound = pygame.mixer.Sound('sounds/Item1A.wav')
+cube_sound = pygame.mixer.Sound('sounds/bell.wav')
+
 
 class Cell:
 	def __init__(self, r, c):
@@ -59,6 +68,8 @@ class Cell:
 			if side:
 				pygame.draw.line(win, WHITE, (self.edges[index][0]),
 										(self.edges[index][1]), 2)
+
+
 
 def create_cells():
 	cells = []
