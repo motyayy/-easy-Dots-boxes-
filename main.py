@@ -1,29 +1,23 @@
 import math
 import pygame
+from ui import main_menu, options
+from settings import *
 
-SCREEN = WIDTH, HEIGHT = 400, 450
-CELLSIZE = int(WIDTH/6)
-PADDING = int(WIDTH/12)
-ROWS = COLS = (WIDTH - 4 * PADDING) // CELLSIZE
 pygame.init()
 win = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
-
-WHITE = (255, 255, 255)
-RED = (252, 91, 122)
-BLUE = (78, 193, 246)
-GREEN = (0, 255, 0)
-BLACK = (12, 12, 12)
-
-font = pygame.font.SysFont('cursive', 25)
+main_menu()
 
 pygame.mixer.init()
 
 pygame.mixer.music.load('sounds/Late-to-the-party.mp3')
 pygame.mixer.music.play(-1)
+pygame.mixer_music.set_volume(0.8)
 
 wall_sound = pygame.mixer.Sound('sounds/Item1A.wav')
 cube_sound = pygame.mixer.Sound('sounds/bell.wav')
 
+wall_sound.set_volume(0.4)
+cube_sound.set_volume(1)
 
 class Cell:
 	def __init__(self, r, c):
@@ -160,34 +154,67 @@ while running:
 		if pos and cell.rect.collidepoint(pos):
 			ccell = cell
 
+
 	if ccell:
 		index = ccell.index
 		if not ccell.winner:
 			pygame.draw.circle(win, RED, (ccell.rect.centerx, ccell.rect.centery), 2)
 
+
+		line_placed = False
+
 		if up and not ccell.sides[0]:
 			ccell.sides[0] = True
-			if index - ROWS >= 0:			
-				cells[index-ROWS].sides[2] = True
-				next_turn = True
+			if index - COLS >= 0:
+				cells[index - COLS].sides[2] = True
+			next_turn = True
+			line_placed = True
+
 		if right and not ccell.sides[1]:
 			ccell.sides[1] = True
 			if (index + 1) % COLS > 0:
-				cells[index+1].sides[3] = True
-				next_turn = True
+				cells[index + 1].sides[3] = True
+			next_turn = True
+			line_placed = True
+
 		if bottom and not ccell.sides[2]:
 			ccell.sides[2] = True
-			if index + ROWS < len(cells):			
-				cells[index+ROWS].sides[0] = True
-				next_turn = True
+			if index + COLS < len(cells):
+				cells[index + COLS].sides[0] = True
+			next_turn = True
+			line_placed = True
+
 		if left and not ccell.sides[3]:
 			ccell.sides[3] = True
-			if (index % COLS) > 0:
-				cells[index-1].sides[1] = True
-				next_turn = True
-		
+			if index % COLS > 0:
+				cells[index - 1].sides[1] = True
+			next_turn = True
+			line_placed = True
+
+		res = ccell.checkwin(player)
+
+		if res:
+			cube_sound.play()
+			fillcount += res
+			if player == 'X':
+				p1_score += 1
+			else:
+				p2_score += 1
+			if fillcount == ROWS * COLS:
+				print(p1_score, p2_score)
+				gameover = True
+		elif line_placed:
+			wall_sound.play()
+
+		if next_turn:
+			turn = (turn + 1) % len(players)
+			player = players[turn]
+			next_turn = False
+
+
 		res = ccell.checkwin(player)
 		if res:
+			cube_sound.play()
 			fillcount += res
 			if player == 'X':
 				p1_score += 1
@@ -201,6 +228,7 @@ while running:
 			turn = (turn + 1) % len(players)
 			player = players[turn]
 			next_turn = False
+
 
 	p1img = font.render(f'Player 1 : {p1_score}', True, BLUE)
 	p1rect = p1img.get_rect()
